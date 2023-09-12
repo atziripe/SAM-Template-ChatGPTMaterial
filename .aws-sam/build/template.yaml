@@ -1,0 +1,54 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Resources:
+  SaveWikiFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: handler.saveWiki
+      Runtime: nodejs18.x
+      CodeUri: SaveWikiFunction
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: ChatGPTTable
+      Environment:
+        Variables:
+          CHAT_GPT_TABLE:
+            Ref: ChatGPTTable
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /wiki
+            Method: POST
+    Metadata:
+      SamResourceId: SaveWikiFunction
+  GetWikiFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: handler.getWiki
+      Runtime: nodejs18.x
+      CodeUri: GetWikiFunction
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: ChatGPTTable
+      Environment:
+        Variables:
+          CHAT_GPT_TABLE:
+            Ref: ChatGPTTable
+      Events:
+        ChatGPTAPI:
+          Type: Api
+          Properties:
+            Path: /wiki
+            Method: GET
+    Metadata:
+      SamResourceId: GetWikiFunction
+  ChatGPTTable:
+    Type: AWS::Serverless::SimpleTable
+Outputs:
+  MyApi:
+    Description: API Gateway endpoint URL
+    Value:
+      Fn::Sub: https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/wiki/
